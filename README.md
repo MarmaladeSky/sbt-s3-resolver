@@ -1,8 +1,14 @@
-# FM SBT S3 Resolver
+# SBT S3 Resolver
 
-[![Build and Tests](https://github.com/tpunder/fm-sbt-s3-resolver/actions/workflows/build.yml/badge.svg)](https://github.com/tpunder/fm-sbt-s3-resolver/actions/workflows/build.yml) [![fm-sbt-s3-resolver Scala version support](https://index.scala-lang.org/tpunder/fm-sbt-s3-resolver/fm-sbt-s3-resolver/latest-by-scala-version.svg?targetType=Sbt)](https://index.scala-lang.org/tpunder/fm-sbt-s3-resolver/fm-sbt-s3-resolver)
+[![Build and Tests](https://github.com/MarmaladeSky/sbt-s3-resolver/actions/workflows/build.yml/badge.svg)](https://github.com/MarmaladeSky/sbt-s3-resolver/actions/workflows/build.yml) [![sbt-s3-resolver Scala version support](https://index.scala-lang.org/MarmaladeSky/sbt-s3-resolver/sbt-s3-resolver/latest-by-scala-version.svg?targetType=Sbt)](https://index.scala-lang.org/MarmaladeSky/sbt-s3-resolver/sbt-s3-resolver)
 
 This SBT plugin adds support for using Amazon S3 for resolving and publishing using s3:// urls.
+
+> **This is a maintained fork** of [fm-sbt-s3-resolver](https://github.com/tpunder/fm-sbt-s3-resolver)
+> by Tim Underwood, continuing from version `0.23.0`. It is published under new
+> coordinates — `digital.junkie` % `sbt-s3-resolver` — since the original
+> `com.frugalmechanic` groupId is no longer maintained. Version numbering continues
+> from upstream so the lineage stays obvious.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -44,10 +50,10 @@ Recent versions of this plugin should work fine on all SBT 1.X versions. If you 
 
 ## SBT 1.3 Support
 
-SBT 1.3 support is available using version `>= 0.19.0`:
+SBT 1.3 support has been available since upstream `0.19.0`, so every release of this fork includes it:
 
 ```scala
-addSbtPlugin("com.frugalmechanic" % "fm-sbt-s3-resolver" % "0.20.0")
+addSbtPlugin("digital.junkie" % "sbt-s3-resolver" % "0.24.0")
 ```
 
 ## SBT 1.1 Support
@@ -116,7 +122,7 @@ All of these forms should work:
 ### Add this to your project/plugins.sbt file:
 
 ```scala
-addSbtPlugin("com.frugalmechanic" % "fm-sbt-s3-resolver" % "0.20.0")
+addSbtPlugin("digital.junkie" % "sbt-s3-resolver" % "0.24.0")
 ```
 
 ### S3 Credentials
@@ -401,7 +407,12 @@ Example:
 
 ## Maintainer
 
-Tim Underwood (<a href="https://github.com/tpunder" rel="author">GitHub</a>, <a href="https://www.linkedin.com/in/tpunder" rel="author">LinkedIn</a>, <a href="https://twitter.com/tpunder" rel="author">Twitter</a>)
+David Akermann (<a href="https://github.com/MarmaladeSky" rel="author">GitHub</a>) &lt;david@junkie.digital&gt;
+
+## Original Author
+
+Tim Underwood (<a href="https://github.com/tpunder" rel="author">GitHub</a>, <a href="https://www.linkedin.com/in/tpunder" rel="author">LinkedIn</a>, <a href="https://twitter.com/tpunder" rel="author">Twitter</a>), who wrote and maintained this plugin as
+[fm-sbt-s3-resolver](https://github.com/tpunder/fm-sbt-s3-resolver) through version `0.23.0`.
 
 ## License
 

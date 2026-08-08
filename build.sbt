@@ -1,4 +1,4 @@
-name := "fm-sbt-s3-resolver"
+name := "sbt-s3-resolver"
 
 description := "SBT S3 Resolver Plugin"
 
