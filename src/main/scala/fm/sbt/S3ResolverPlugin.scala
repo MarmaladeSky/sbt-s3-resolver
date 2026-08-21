@@ -53,7 +53,7 @@ object S3ResolverPlugin extends AutoPlugin {
   // This plugin will load automatically
   override def trigger: PluginTrigger = allRequirements
 
-  override def projectSettings: Seq[Setting[_]] = Seq(
+  override def projectSettings: Seq[Setting[?]] = Seq(
     s3CredentialsProvider := S3URLHandler.defaultCredentialsProviderChain,
     showS3Credentials := {
       val log = state.value.log
@@ -83,7 +83,7 @@ object S3ResolverPlugin extends AutoPlugin {
           log.error("Too many arguments for showS3Credentials")
       }
     },
-    onLoad in Global := (onLoad in Global).value andThen { state =>
+    Global / onLoad := (Global / onLoad).value andThen { state =>
       def info: String => Unit = state.log.info(_)
       def debug: String => Unit = state.log.debug(_)
 

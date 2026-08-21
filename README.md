@@ -14,10 +14,7 @@ This SBT plugin adds support for using Amazon S3 for resolving and publishing us
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
-- [SBT 1.X Support](#sbt-1x-support)
-- [SBT 1.3 Support](#sbt-13-support)
-- [SBT 1.1 Support](#sbt-11-support)
-- [SBT 1.0 Support](#sbt-10-support)
+- [SBT 2.X Support](#sbt-2x-support)
 - [Examples](#examples)
   - [Resolving Dependencies via S3](#resolving-dependencies-via-s3)
   - [Publishing to S3](#publishing-to-s3)
@@ -44,27 +41,17 @@ This SBT plugin adds support for using Amazon S3 for resolving and publishing us
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## SBT 1.X Support
+## SBT 2.X Support
 
-Recent versions of this plugin should work fine on all SBT 1.X versions. If you run into problems please open up an Issue.
-
-## SBT 1.3 Support
-
-SBT 1.3 support has been available since upstream `0.19.0`, so every release of this fork includes it:
+Starting with `0.24.0` this plugin targets **SBT 2.x only**. It is built against
+Scala 3 and no longer cross-builds for SBT 0.13 or 1.x.
 
 ```scala
 addSbtPlugin("digital.junkie" % "sbt-s3-resolver" % "0.24.0")
 ```
 
-## SBT 1.1 Support
-
-SBT 1.1 support is available using version `>= 0.14.0`:
-
-## SBT 1.0 Support
-
-Note: **You need to use at least SBT 1.0.4** for this plugin to work with SBT 1.0 due to 
-https://github.com/sbt/librarymanagement/issues/175 which was fixed in this pull 
-request: https://github.com/sbt/librarymanagement/pull/183
+If you are still on SBT 1.x, use upstream
+[fm-sbt-s3-resolver](https://github.com/tpunder/fm-sbt-s3-resolver) `0.23.0`.
 
 ## Examples
 

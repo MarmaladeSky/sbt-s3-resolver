@@ -50,7 +50,7 @@ final class S3URLConnection(url: URL) extends HttpURLConnection(url) {
     def close(): Unit = obj.close()
   }
 
-  private[this] var response: Option[S3Response] = None
+  private var response: Option[S3Response] = None
 
   def connect(): Unit = {
     val (client, bucket, key) = s3.getClientBucketAndKey(url)

@@ -1,36 +1,30 @@
+organization := "digital.junkie"
+
 name := "sbt-s3-resolver"
 
 description := "SBT S3 Resolver Plugin"
 
+scalaVersion := "3.8.4"
+
 scalacOptions := Seq(
-  "-encoding", "UTF-8",
+  "-encoding",
+  "UTF-8",
   "-unchecked",
   "-deprecation",
   "-language:implicitConversions",
   "-feature",
-  "-Xlint"
-) ++ (if (scalaVersion.value.startsWith("2.11")) Seq(
-  // Scala 2.11 specific compiler flags
-  "-Ywarn-unused-import"
-) else Nil) ++ (if (scalaVersion.value.startsWith("2.12")) Seq(
-  // Scala 2.12 specific compiler flags
-  // NOTE: These are currently broken on Scala <= 2.12.6 when using Java 9+ (will hopefully be fixed in 2.12.7)
-  //"-opt:l:inline",
-  //"-opt-inline-from:<sources>",
-) else Nil)
+  "-Wshadow:all"
+)
 
 enablePlugins(SbtPlugin)
 
-crossSbtVersions := Vector("0.13.18", "1.1.0")
-
-val amazonSDKVersion = "1.12.597"
+val amazonSDKVersion = "1.12.797"
+val ivyVersion = "2.6.0"
 
 libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-java-sdk-s3" % amazonSDKVersion,
   "com.amazonaws" % "aws-java-sdk-sts" % amazonSDKVersion,
-  "org.apache.ivy" % "ivy" % "2.4.0"
+  "org.apache.ivy" % "ivy" % ivyVersion
 )
-
-publishTo := sonatypePublishToBundle.value
 
 ThisBuild / versionScheme := Some("semver-spec")

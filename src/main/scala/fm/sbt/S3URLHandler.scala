@@ -34,7 +34,7 @@ import com.amazonaws.services.securitytoken.model.{AssumeRoleRequest, AssumeRole
 import org.apache.ivy.util.url.URLHandler
 import org.apache.ivy.util.{CopyProgressEvent, CopyProgressListener, Message}
 import scala.annotation.tailrec
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.Try
 import scala.util.matching.Regex
 
@@ -99,7 +99,7 @@ object S3URLHandler {
     protected def getRoleArn(keys: String*): String
 
     def getCredentials(): AWSCredentials = {
-      val roleArn: String = getRoleArn(RoleArnKeyNames: _*)
+      val roleArn: String = getRoleArn(RoleArnKeyNames*)
 
       if (roleArn == null || roleArn == "") return null
 
@@ -186,7 +186,7 @@ object S3URLHandler {
       InstanceProfileCredentialsProvider.getInstance()
     )
 
-    val basicProviderChain: AWSCredentialsProviderChain = new AWSCredentialsProviderChain(basicProviders: _*)
+    val basicProviderChain: AWSCredentialsProviderChain = new AWSCredentialsProviderChain(basicProviders*)
 
     val roleBasedProviders: Vector[AWSCredentialsProvider] = Vector(
       new BucketSpecificRoleBasedEnvironmentVariableCredentialsProvider(basicProviderChain, bucket),
@@ -198,7 +198,7 @@ object S3URLHandler {
       new RoleBasedPropertiesFileCredentialsProvider(basicProviderChain, s".s3credentials")
     )
 
-    new AWSCredentialsProviderChain((roleBasedProviders ++ basicProviders): _*)
+    new AWSCredentialsProviderChain((roleBasedProviders ++ basicProviders)*)
   }
 
   def getRegionNameFromDNS(bucket: String): Option[String] = {
@@ -207,7 +207,7 @@ object S3URLHandler {
     getDNSAliasesForBucket(bucket).flatMap { RegionMatcher.findFirstIn(_) }.headOption
   }
 
-  private[this] val dnsContext: InitialDirContext = {
+  private val dnsContext: InitialDirContext = {
     val env: Properties = new Properties()
     env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.dns.DnsContextFactory")
     new InitialDirContext(env)
@@ -223,7 +223,7 @@ object S3URLHandler {
     val cname: Option[String] = try {
       val attrs: Attributes = dnsContext.getAttributes(host, Array("CNAME"))
       Option(attrs.get("CNAME"))
-        .flatMap{ attr: Attribute => Option(attr.get) }
+        .flatMap{ (attr: Attribute) => Option(attr.get) }
         .collectFirst{ case res: String => res }
     } catch {
       case _: NamingException => None
@@ -377,9 +377,9 @@ final class S3URLHandler extends URLHandler {
     
     require(!listing.isTruncated, "Truncated ObjectListing!  Making additional calls currently isn't implemented!")
     
-    val keys: Seq[String] = listing.getCommonPrefixes.asScala ++ listing.getObjectSummaries.asScala.map{ _.getKey }
+    val keys: Seq[String] = (listing.getCommonPrefixes.asScala ++ listing.getObjectSummaries.asScala.map{ _.getKey }).toSeq
     
-    val res: Seq[URL] = keys.map{ k: String =>
+    val res: Seq[URL] = keys.map{ (k: String) =>
       new URL(url.toString.stripSuffix("/") + "/" + k.stripPrefix(prefix))
     }
     
@@ -495,7 +495,7 @@ final class S3URLHandler extends URLHandler {
   def getBucketAndKey(url: URL): (String, String) = {
     // The AmazonS3URI constructor should work for standard S3 urls.  But if a custom domain is being used
     // (e.g. snapshots.maven.frugalmechanic.com) then we treat the hostname as the bucket and the path as the key
-    getAmazonS3URI(url).map{ amzn: AmazonS3URI =>
+    getAmazonS3URI(url).map{ (amzn: AmazonS3URI) =>
       (amzn.getBucket, amzn.getKey)
     }.getOrElse {
       // Probably a custom domain name - The host should be the bucket and the path the key

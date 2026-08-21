@@ -16,17 +16,19 @@
  */
 package fm.sbt
 
-import java.net.URL
-import java.util.List
 import org.apache.ivy.plugins.repository.url.URLRepository
-import scala.collection.JavaConverters._
+
+import java.net.URI
+import java.util
+import java.util.List
+import scala.jdk.CollectionConverters.*
 
 final class S3URLRepository extends URLRepository {
-  private[this] val s3: S3URLHandler = new S3URLHandler()
-  
-  override def list(parent: String): List[_] = {
+  private val s3: S3URLHandler = new S3URLHandler()
+
+  override def list(parent: String): util.List[String] = {
     if (parent.startsWith("s3")) {
-      s3.list(new URL(parent)).map{ _.toExternalForm }.asJava
+      s3.list(URI.create(parent).toURL).map { _.toExternalForm }.asJava
     } else {
       super.list(parent)
     }
