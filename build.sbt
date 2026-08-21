@@ -41,11 +41,13 @@ enablePlugins(SbtPlugin)
 
 val amazonSDKVersion = "1.12.797"
 val ivyVersion = "2.6.0"
+val munitVersion = "1.1.1"
 
 libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-java-sdk-s3" % amazonSDKVersion,
   "com.amazonaws" % "aws-java-sdk-sts" % amazonSDKVersion,
-  "org.apache.ivy" % "ivy" % ivyVersion
+  "org.apache.ivy" % "ivy" % ivyVersion,
+  "org.scalameta" %% "munit" % munitVersion % Test
 )
 
 ThisBuild / versionScheme := Some("semver-spec")

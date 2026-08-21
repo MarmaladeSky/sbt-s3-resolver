@@ -168,7 +168,7 @@ object S3URLHandler {
     override val RoleArnKeyNames: Seq[String] = Seq(s"${RoleArnKeyName}.${bucket}", s"${bucket}.${RoleArnKeyName}")
   }
   
-  private def toEnvironmentVariableName(s: String): String = s.toUpperCase.replace('-','_').replace('.','_').replaceAll("[^A-Z0-9_]", "")
+  private[sbt] def toEnvironmentVariableName(s: String): String = s.toUpperCase.replace('-','_').replace('.','_').replaceAll("[^A-Z0-9_]", "")
 
   private def makePropertiesFileCredentialsProvider(fileName: String): PropertiesFileCredentialsProvider = {
     val file: File = new File(DOT_SBT_DIR, fileName)

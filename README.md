@@ -10,44 +10,13 @@ This SBT plugin adds support for using Amazon S3 for resolving and publishing us
 > `com.frugalmechanic` groupId is no longer maintained. Version numbering continues
 > from upstream so the lineage stays obvious.
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
-
-- [SBT 2.X Support](#sbt-2x-support)
-- [Examples](#examples)
-  - [Resolving Dependencies via S3](#resolving-dependencies-via-s3)
-  - [Publishing to S3](#publishing-to-s3)
-  - [Valid s3:// URL Formats](#valid-s3-url-formats)
-- [Usage](#usage)
-  - [Add this to your project/plugins.sbt file:](#add-this-to-your-projectpluginssbt-file)
-  - [S3 Credentials](#s3-credentials)
-    - [Bucket Specific Environment Variables](#bucket-specific-environment-variables)
-    - [Bucket Specific Java System Properties](#bucket-specific-java-system-properties)
-    - [Bucket Specific Property Files](#bucket-specific-property-files)
-    - [Environment Variables](#environment-variables)
-    - [Java System Properties](#java-system-properties)
-    - [Property File](#property-file)
-  - [Custom S3 Credentials](#custom-s3-credentials)
-- [IAM Policy Examples](#iam-policy-examples)
-  - [Read/Write Policy (for publishing)](#readwrite-policy-for-publishing)
-  - [Read-Only Policy](#read-only-policy)
-  - [Releases Read-Only, Snapshots Read/Write](#releases-read-only-snapshots-readwrite)
-- [IAM Role Policy Examples](#iam-role-policy-examples)
-- [S3 Server-Side Encryption](#s3-server-side-encryption)
-- [Maintainer](#maintainer)
-- [Copyright](#copyright)
-- [License](#license)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 ## SBT 2.X Support
 
-Starting with `0.24.0` this plugin targets **SBT 2.x only**. It is built against
+Starting with `1.0.0` this plugin targets **SBT 2.x only**. It is built against
 Scala 3 and no longer cross-builds for SBT 0.13 or 1.x.
 
 ```scala
-addSbtPlugin("digital.junkie" % "sbt-s3-resolver" % "0.24.0")
+addSbtPlugin("digital.junkie" % "sbt-s3-resolver" % "1.0.0")
 ```
 
 If you are still on SBT 1.x, use upstream
@@ -66,7 +35,7 @@ resolvers += "FrugalMechanic Snapshots" at "s3://fm-sbt-s3-resolver-example-buck
 Ivy Style:
 
 ```scala
-resolvers += Resolver.url("FrugalMechanic Snapshots", url("s3://fm-sbt-s3-resolver-example-bucket/snapshots"))(Resolver.ivyStylePatterns)
+resolvers += Resolver.uri("FrugalMechanic Snapshots", uri("s3://fm-sbt-s3-resolver-example-bucket/snapshots"))(using Resolver.ivyStylePatterns)
 ```
 
 ### Publishing to S3
@@ -82,7 +51,7 @@ Ivy Style:
 
 ```scala
 publishMavenStyle := false
-publishTo := Some(Resolver.url("FrugalMechanic Snapshots", url("s3://fm-sbt-s3-resolver-example-bucket/snapshots"))(Resolver.ivyStylePatterns))
+publishTo := Some(Resolver.uri("FrugalMechanic Snapshots", uri("s3://fm-sbt-s3-resolver-example-bucket/snapshots"))(using Resolver.ivyStylePatterns))
 ```
 
 ### Valid s3:// URL Formats
@@ -109,14 +78,15 @@ All of these forms should work:
 ### Add this to your project/plugins.sbt file:
 
 ```scala
-addSbtPlugin("digital.junkie" % "sbt-s3-resolver" % "0.24.0")
+addSbtPlugin("digital.junkie" % "sbt-s3-resolver" % "1.0.0")
 ```
 
 ### S3 Credentials
 
 S3 Credentials are checked **in the following places and _order_** (e.g. bucket specific settings (\~/.sbt/.&lt;bucket_name&gt;_s3credentials) get resolved before global settings (\~/.sbt/.s3credentials)):
 
-**Note: I think this logic has changed a little bit.  See the S3URLHandler.defaultCredentialsProviderChain for the current implementation: https://github.com/frugalmechanic/fm-sbt-s3-resolver/blob/master/src/main/scala/fm/sbt/S3URLHandler.scala#L166**
+The authoritative order is `S3URLHandler.defaultCredentialsProviderChain` in
+[S3URLHandler.scala](https://github.com/MarmaladeSky/sbt-s3-resolver/blob/master/src/main/scala/fm/sbt/S3URLHandler.scala).
 
 #### Bucket Specific Environment Variables
 
@@ -131,10 +101,10 @@ S3 Credentials are checked **in the following places and _order_** (e.g. bucket 
   
 Example:
 
-The bucket name "fm-sbt-s3-resolver-example-bucket" becomes "MAVEN\_FRUGALMECHANIC\_COM":
+The bucket name "fm-sbt-s3-resolver-example-bucket" becomes "FM\_SBT\_S3\_RESOLVER\_EXAMPLE\_BUCKET":
 
 ```shell
-AWS_ACCESS_KEY_ID_MAVEN_FRUGALMECHANIC_COM="XXXXXX" AWS_SECRET_KEY_MAVEN_FRUGALMECHANIC_COM="XXXXXX" sbt
+AWS_ACCESS_KEY_ID_FM_SBT_S3_RESOLVER_EXAMPLE_BUCKET="XXXXXX" AWS_SECRET_KEY_FM_SBT_S3_RESOLVER_EXAMPLE_BUCKET="XXXXXX" sbt
 ```
 
 #### Bucket Specific Java System Properties
@@ -235,11 +205,10 @@ s3CredentialsProvider := { (bucket: String) =>
 
 ## IAM Policy Examples
 
-I recommend that you create IAM Credentials for reading/writing your Maven S3 Bucket.  Here are some examples for our **fm-sbt-s3-resolver-example-bucket** bucket:
+I recommend that you create IAM Credentials for reading/writing your Maven S3 Bucket.
+This is the read/write policy needed for publishing to our **fm-sbt-s3-resolver-example-bucket** bucket:
 
-### Read/Write Policy (for publishing)
-
-<pre>
+```json
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -251,71 +220,22 @@ I recommend that you create IAM Credentials for reading/writing your Maven S3 Bu
     {
       "Effect": "Allow",
       "Action": ["s3:ListBucket"],
-      "Resource": ["arn:aws:s3:::<b>fm-sbt-s3-resolver-example-bucket</b>"]
+      "Resource": ["arn:aws:s3:::fm-sbt-s3-resolver-example-bucket"]
     },
     {
       "Effect": "Allow",
       "Action": ["s3:DeleteObject","s3:GetObject","s3:PutObject"],
-      "Resource": ["arn:aws:s3:::<b>fm-sbt-s3-resolver-example-bucket</b>/*"]
+      "Resource": ["arn:aws:s3:::fm-sbt-s3-resolver-example-bucket/*"]
     }
   ]
 }
-</pre>
+```
 
-### Read-Only Policy
+For a **read-only** policy, drop `s3:DeleteObject` and `s3:PutObject` from the last statement.
 
-<pre>
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": ["s3:GetBucketLocation"],
-      "Resource": "arn:aws:s3:::*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": ["s3:ListBucket"],
-      "Resource": ["arn:aws:s3:::<b>fm-sbt-s3-resolver-example-bucket</b>"]
-    },
-    {
-      "Effect": "Allow",
-      "Action": ["s3:GetObject"],
-      "Resource": ["arn:aws:s3:::<b>fm-sbt-s3-resolver-example-bucket</b>/*"]
-    }
-  ]
-}
-</pre>
-
-### Releases Read-Only, Snapshots Read/Write
-
-<pre>
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": ["s3:GetBucketLocation"],
-      "Resource": "arn:aws:s3:::*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": ["s3:ListBucket"],
-      "Resource": ["arn:aws:s3:::<b>fm-sbt-s3-resolver-example-bucket</b>"]
-    },
-    {
-      "Effect": "Allow",
-      "Action": ["s3:GetObject"],
-      "Resource": ["arn:aws:s3:::<b>fm-sbt-s3-resolver-example-bucket</b>/<b>releases</b>/*"]
-    },
-    {
-      "Effect": "Allow",
-      "Action": ["s3:DeleteObject","s3:GetObject","s3:PutObject"],
-      "Resource": ["arn:aws:s3:::<b>fm-sbt-s3-resolver-example-bucket</b>/<b>snapshots</b>/*"]
-    }
-  ]
-}
-</pre>
+To keep **releases read-only and snapshots read/write**, split that last statement in two and
+scope each by prefix: `.../releases/*` with `["s3:GetObject"]`, and `.../snapshots/*` with the
+full `["s3:DeleteObject","s3:GetObject","s3:PutObject"]`.
 
 ## IAM Role Policy Examples
 
@@ -336,7 +256,7 @@ This is a simple example where a Host AWS Account, can create a Role with permis
   ]
 }
 </pre>
-  2. Associate the proper [IAM Policy Examples](#iam) to the Host Role
+  2. Associate the proper [IAM Policy Examples](#iam-policy-examples) to the Host Role
   3. Client AWS Account needs to create an AWS IAM User [Client User Name] and associated a policy to gives it permissions to AssumeRole from the Host AWS Account:
 <pre>
 {
