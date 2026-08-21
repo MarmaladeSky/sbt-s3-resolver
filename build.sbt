@@ -4,6 +4,27 @@ name := "sbt-s3-resolver"
 
 description := "SBT S3 Resolver Plugin"
 
+homepage := Some(uri("https://github.com/MarmaladeSky/sbt-s3-resolver"))
+
+licenses := Seq(License.Apache2)
+
+scmInfo := Some(
+  ScmInfo(
+    uri("https://github.com/MarmaladeSky/sbt-s3-resolver"),
+    "scm:git:https://github.com/MarmaladeSky/sbt-s3-resolver.git",
+    "scm:git:git@github.com:MarmaladeSky/sbt-s3-resolver.git"
+  )
+)
+
+developers := List(
+  Developer(
+    id = "88D15D7AF7672C866A8F839C56B2CCA5F83AECB4",
+    name = "David Akermann",
+    email = "david@junkie.digital",
+    url = uri("https://github.com/MarmaladeSky")
+  )
+)
+
 scalaVersion := "3.8.4"
 
 scalacOptions := Seq(
@@ -28,3 +49,12 @@ libraryDependencies ++= Seq(
 )
 
 ThisBuild / versionScheme := Some("semver-spec")
+
+ThisBuild / publishTo := {
+  if (isSnapshot.value) Some(Resolver.sonatypeCentralSnapshots)
+  else localStaging.value
+}
+
+publishMavenStyle := true
+
+Global / pgpSigningKey := Some("5F0ECF7B017D1A2D")

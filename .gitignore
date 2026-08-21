@@ -11,5 +11,7 @@
 .settings
 .target
 .worksheet
+*.semanticdb
+metals.sbt
 target
 
