@@ -21,15 +21,6 @@ scalacOptions := Seq(
 
 enablePlugins(SbtPlugin)
 
-scriptedBufferLog := false
-
-// Don't depend on publishLocal when running "scripted". This allows us to run
-// "^publishLocal" for the crossSbtVersions and then run "scripted" on arbitrary
-// SBT versions for testing.
-scriptedDependencies := {}
-
-scriptedLaunchOpts ++= Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
-
 crossSbtVersions := Vector("0.13.18", "1.1.0")
 
 val amazonSDKVersion = "1.12.597"
@@ -37,8 +28,7 @@ val amazonSDKVersion = "1.12.597"
 libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-java-sdk-s3" % amazonSDKVersion,
   "com.amazonaws" % "aws-java-sdk-sts" % amazonSDKVersion,
-  "org.apache.ivy" % "ivy" % "2.4.0",
-  "org.scalatest" %% "scalatest" % "3.2.10" % Test
+  "org.apache.ivy" % "ivy" % "2.4.0"
 )
 
 publishTo := sonatypePublishToBundle.value
