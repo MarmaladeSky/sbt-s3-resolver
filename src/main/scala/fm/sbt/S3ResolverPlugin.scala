@@ -22,9 +22,6 @@ import com.amazonaws.services.s3.model.CannedAccessControlList
 import org.apache.ivy.util.url.{URLHandlerDispatcher, URLHandlerRegistry}
 import sbt.Keys._
 import sbt._
-import sbt.complete.DefaultParsers._
-
-import scala.util.Try
 
 /**
  * All this does is register the s3:// url handler with the JVM and IVY
@@ -41,10 +38,6 @@ object S3ResolverPlugin extends AutoPlugin {
       settingKey[String => AWSCredentialsProvider]("AWS credentials provider to access S3")
     }
 
-    lazy val showS3Credentials: InputKey[Unit] = {
-      InputKey[Unit]("showS3Credentials", "Just outputs credentials that are loaded by the s3credentials provider")
-    }
-
     lazy val s3ResolverBucketACLMap: SettingKey[Map[String, CannedAccessControlList]] = settingKey[Map[String, CannedAccessControlList]]("This allows us to specify a canned ACL for s3 buckets")
   }
 
@@ -55,34 +48,6 @@ object S3ResolverPlugin extends AutoPlugin {
 
   override def projectSettings: Seq[Setting[?]] = Seq(
     s3CredentialsProvider := S3URLHandler.defaultCredentialsProviderChain,
-    showS3Credentials := {
-      val log = state.value.log
-
-      spaceDelimited("<arg>").parsed match {
-        case bucket :: Nil =>
-          val provider: AWSCredentialsProvider = s3CredentialsProvider.value(bucket)
-
-          Try {
-            Option(provider.getCredentials) match {
-              case Some(awsCredentials) =>
-                log.info("Found following AWS credentials:")
-                log.info("Access key: " + awsCredentials.getAWSAccessKeyId)
-                log.info("Secret key: " + awsCredentials.getAWSSecretKey)
-
-              case None =>
-                log.error("Couldn't find credentials for bucked: %s" format bucket)
-            }
-          } recover { case e: Exception =>
-            log.error(e.getMessage)
-          }
-
-        case Nil =>
-          log.error("Bucket name not given")
-
-        case _ =>
-          log.error("Too many arguments for showS3Credentials")
-      }
-    },
     Global / onLoad := (Global / onLoad).value andThen { state =>
       def info: String => Unit = state.log.info(_)
       def debug: String => Unit = state.log.debug(_)
