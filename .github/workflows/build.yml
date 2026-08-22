@@ -24,3 +24,18 @@ jobs:
       - name: Setup sbt
         uses: sbt/setup-sbt@v1
       - run: sbt test
+
+  e2e:
+    name: S3 publish and resolve
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'sbt'
+      - name: Setup sbt
+        uses: sbt/setup-sbt@v1
+      - run: bash scripts/e2e-test.sh
