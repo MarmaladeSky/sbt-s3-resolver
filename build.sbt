@@ -39,13 +39,14 @@ scalacOptions := Seq(
 
 enablePlugins(SbtPlugin)
 
-val amazonSDKVersion = "1.12.797"
+val amazonSDKVersion = "2.54.2"
 val ivyVersion = "2.6.0"
 val munitVersion = "1.1.1"
 
 libraryDependencies ++= Seq(
-  "com.amazonaws" % "aws-java-sdk-s3" % amazonSDKVersion,
-  "com.amazonaws" % "aws-java-sdk-sts" % amazonSDKVersion,
+  "software.amazon.awssdk" % "s3" % amazonSDKVersion,
+  "software.amazon.awssdk" % "sts" % amazonSDKVersion,
+  "software.amazon.awssdk" % "apache-client" % amazonSDKVersion,
   "org.apache.ivy" % "ivy" % ivyVersion,
   "org.scalameta" %% "munit" % munitVersion % Test
 )

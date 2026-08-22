@@ -16,8 +16,9 @@
  */
 package fm.sbt
 
-import com.amazonaws.SDKGlobalConfiguration.{ACCESS_KEY_SYSTEM_PROPERTY, SECRET_KEY_SYSTEM_PROPERTY}
 import fm.sbt.S3URLHandler.toEnvironmentVariableName
+import fm.sbt.s3.Handler
+import java.net.URL
 
 final class S3URLHandlerTest extends munit.FunSuite {
 
@@ -29,12 +30,27 @@ final class S3URLHandlerTest extends munit.FunSuite {
 
   test("bucket specific system properties keep the bucket name unchanged") {
     assertEquals(
-      s"$ACCESS_KEY_SYSTEM_PROPERTY.$bucket",
+      s"aws.accessKeyId.$bucket",
       "aws.accessKeyId.fm-sbt-s3-resolver-example-bucket"
     )
     assertEquals(
-      s"$SECRET_KEY_SYSTEM_PROPERTY.$bucket",
+      s"aws.secretKey.$bucket",
       "aws.secretKey.fm-sbt-s3-resolver-example-bucket"
     )
+  }
+
+  test("parses documented S3 URL formats") {
+    val expected = (bucket, "snapshots/example.jar")
+    val urls = Seq(
+      s"s3://$bucket/snapshots/example.jar",
+      s"s3://s3.amazonaws.com/$bucket/snapshots/example.jar",
+      s"s3://$bucket.s3.amazonaws.com/snapshots/example.jar",
+      s"s3://s3-us-west-2.amazonaws.com/$bucket/snapshots/example.jar",
+      s"s3://$bucket.s3-us-west-2.amazonaws.com/snapshots/example.jar"
+    )
+    urls.foreach { value =>
+      val url = new URL(null, value, new Handler())
+      assertEquals(new S3URLHandler().getBucketAndKey(url), expected)
+    }
   }
 }

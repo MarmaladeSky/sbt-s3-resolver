@@ -129,8 +129,8 @@ SBT_OPTS="-Daws.accessKeyId.fm-sbt-s3-resolver-example-bucket=XXXXXX -Daws.secre
 
 #### Environment Variables
 
-    AWS_ACCESS_KEY_ID (or AWS_ACCESS_KEY)
-    AWS_SECRET_KEY (or AWS_SECRET_ACCESS_KEY)
+    AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY
     AWS_ROLE_ARN
 
 Example:
@@ -146,20 +146,20 @@ AWS_ACCESS_KEY_ID="XXXXXX" AWS_SECRET_KEY="XXXXXX" AWS_ROLE_ARN="arn:aws:iam::12
 #### Java System Properties
 
     // Basic Credentials
-    -Daws.accessKeyId=XXXXXX -Daws.secretKey=XXXXXX 
+    -Daws.accessKeyId=XXXXXX -Daws.secretAccessKey=XXXXXX
 
     // IAM Role
-    -Daws.accessKeyId=XXXXXX -Daws.secretKey=XXXXXX -Daws.roleArn=arn:aws:iam::123456789012:role/RoleName
+    -Daws.accessKeyId=XXXXXX -Daws.secretAccessKey=XXXXXX -Daws.roleArn=arn:aws:iam::123456789012:role/RoleName
 
 
 Example:
  
 ```shell
 // Basic Credentials
-SBT_OPTS="-Daws.accessKeyId=XXXXXX -Daws.secretKey=XXXXXX" sbt
+SBT_OPTS="-Daws.accessKeyId=XXXXXX -Daws.secretAccessKey=XXXXXX" sbt
 
 // IAM Role Credentials
-SBT_OPTS="-Daws.accessKeyId=XXXXXX -Daws.secretKey=XXXXXX -Daws.roleArn=arn:aws:iam::123456789012:role/RoleName" sbt
+SBT_OPTS="-Daws.accessKeyId=XXXXXX -Daws.secretAccessKey=XXXXXX -Daws.roleArn=arn:aws:iam::123456789012:role/RoleName" sbt
 ```
 
 #### Property File
@@ -179,27 +179,28 @@ roleArn = arn:aws:iam::123456789012:role/RoleName
 
 ### Custom S3 Credentials
 
-If the default credential providers do not work for you then you can specify your own AWSCredentialsProvider using the `s3CredentialsProvider` SettingKey in your `build.sbt` file:
+If the default credential providers do not work for you then you can specify your own `AwsCredentialsProvider` using the `s3CredentialsProvider` setting in your `build.sbt` file:
 
 ```scala
-import com.amazonaws.auth.{AWSCredentialsProviderChain, DefaultAWSCredentialsProviderChain}
-import com.amazonaws.auth.profile.ProfileCredentialsProvider
+import software.amazon.awssdk.auth.credentials.{AwsCredentialsProviderChain, DefaultCredentialsProvider, ProfileCredentialsProvider}
 
 s3CredentialsProvider := { (bucket: String) =>
-  new AWSCredentialsProviderChain(
-    new ProfileCredentialsProvider("my_profile"),
-    DefaultAWSCredentialsProviderChain.getInstance()
-  )
+  AwsCredentialsProviderChain.builder()
+    .credentialsProviders(
+      ProfileCredentialsProvider.create("my_profile"),
+      DefaultCredentialsProvider.builder().build()
+    )
+    .build()
 }
 ```
 
 If you are really lazy and want to provide static credentials using this in your `build.sbt` file will work:
 
 ```scala
-import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
+import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
 
 s3CredentialsProvider := { (bucket: String) =>
-  new AWSStaticCredentialsProvider(new BasicAWSCredentials("your_accessKey", "your_secretKey"))
+  StaticCredentialsProvider.create(AwsBasicCredentials.create("your_accessKey", "your_secretKey"))
 }
 ```
 

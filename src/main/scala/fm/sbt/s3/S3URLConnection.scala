@@ -16,13 +16,14 @@
  */
 package fm.sbt.s3
 
-import com.amazonaws.AmazonServiceException
-import com.amazonaws.services.s3.model.{ObjectMetadata, S3Object}
 import fm.sbt.S3URLHandler
 import java.io.InputStream
 import java.net.{HttpURLConnection, URL}
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import software.amazon.awssdk.awscore.exception.AwsServiceException
+import software.amazon.awssdk.core.ResponseInputStream
+import software.amazon.awssdk.services.s3.model.{GetObjectRequest, GetObjectResponse, HeadObjectRequest, HeadObjectResponse}
 
 object S3URLConnection {
   private val s3: S3URLHandler = new S3URLHandler()
@@ -31,34 +32,45 @@ object S3URLConnection {
 /**
  * Implements an HttpURLConnection for compatibility with Coursier (https://github.com/coursier/coursier)
  */
-final class S3URLConnection(url: URL) extends HttpURLConnection(url) {
+final class S3URLConnection(requestUrl: URL) extends HttpURLConnection(requestUrl) {
   import S3URLConnection.s3
 
   private trait S3Response extends AutoCloseable {
-    def meta: ObjectMetadata
+    def contentType: String
+    def contentEncoding: String
+    def contentLength: Long
+    def lastModified: java.time.Instant
     def inputStream: Option[InputStream]
   }
 
-  private case class HEADResponse(meta: ObjectMetadata) extends S3Response {
+  private case class HEADResponse(meta: HeadObjectResponse) extends S3Response {
     def close(): Unit = {}
     def inputStream: Option[InputStream] = None
+    def contentType: String = meta.contentType()
+    def contentEncoding: String = meta.contentEncoding()
+    def contentLength: Long = meta.contentLength()
+    def lastModified: java.time.Instant = meta.lastModified()
   }
 
-  private case class GETResponse(obj: S3Object) extends S3Response {
-    def meta: ObjectMetadata = obj.getObjectMetadata
-    def inputStream: Option[InputStream] = Option(obj.getObjectContent())
-    def close(): Unit = obj.close()
+  private case class GETResponse(stream: ResponseInputStream[GetObjectResponse]) extends S3Response {
+    private def meta: GetObjectResponse = stream.response()
+    def inputStream: Option[InputStream] = Some(stream)
+    def close(): Unit = stream.close()
+    def contentType: String = meta.contentType()
+    def contentEncoding: String = meta.contentEncoding()
+    def contentLength: Long = meta.contentLength()
+    def lastModified: java.time.Instant = meta.lastModified()
   }
 
   private var response: Option[S3Response] = None
 
   def connect(): Unit = {
-    val (client, bucket, key) = s3.getClientBucketAndKey(url)
+    val (client, bucket, key) = s3.getClientBucketAndKey(requestUrl)
 
     try {
       response = getRequestMethod.toLowerCase match {
-        case "head" => Option(HEADResponse(client.getObjectMetadata(bucket, key)))
-        case "get" => Option(GETResponse(client.getObject(bucket, key)))
+        case "head" => Option(HEADResponse(client.headObject(HeadObjectRequest.builder().bucket(bucket).key(key).build())))
+        case "get" => Option(GETResponse(client.getObject(GetObjectRequest.builder().bucket(bucket).key(key).build())))
         case "post" => ???
         case "put" => ???
         case _ => throw new IllegalArgumentException("Invalid request method: "+getRequestMethod)
@@ -66,7 +78,7 @@ final class S3URLConnection(url: URL) extends HttpURLConnection(url) {
 
       responseCode = if (response.isEmpty) 404 else 200
     } catch {
-      case ex: AmazonServiceException => responseCode = ex.getStatusCode
+      case ex: AwsServiceException => responseCode = ex.statusCode()
     }
 
     // Also set the responseMessage (an HttpURLConnection field) for better compatibility
@@ -74,7 +86,7 @@ final class S3URLConnection(url: URL) extends HttpURLConnection(url) {
     connected = true
   }
 
-  def usingProxy(): Boolean = Option(s3.getProxyConfiguration.getProxyHost).exists{ _ != "" }
+  def usingProxy(): Boolean = s3.getProxyConfiguration.nonEmpty
 
   override def getInputStream: InputStream = {
     if (!connected) connect()
@@ -95,10 +107,10 @@ final class S3URLConnection(url: URL) extends HttpURLConnection(url) {
     if (!connected) connect()
 
     field.toLowerCase match {
-      case "content-type" => response.map{ _.meta.getContentType }.orNull
-      case "content-encoding" => response.map{ _.meta.getContentEncoding }.orNull
-      case "content-length" => response.map{ _.meta.getContentLength().toString }.orNull
-      case "last-modified" => response.map{ _.meta.getLastModified }.map{ _.toInstant.atOffset(ZoneOffset.UTC) }.map{ DateTimeFormatter.RFC_1123_DATE_TIME.format }.orNull
+      case "content-type" => response.map{ _.contentType }.orNull
+      case "content-encoding" => response.map{ _.contentEncoding }.orNull
+      case "content-length" => response.map{ _.contentLength.toString }.orNull
+      case "last-modified" => response.map{ _.lastModified.atOffset(ZoneOffset.UTC) }.map{ DateTimeFormatter.RFC_1123_DATE_TIME.format }.orNull
       case _ => null // Should return null if no value for header
     }
   }
