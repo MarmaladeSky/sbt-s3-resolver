@@ -149,7 +149,7 @@ AWS_ACCESS_KEY_ID="XXXXXX" AWS_SECRET_KEY="XXXXXX" AWS_ROLE_ARN="arn:aws:iam::12
     -Daws.accessKeyId=XXXXXX -Daws.secretKey=XXXXXX 
 
     // IAM Role
-    -Daws.accessKeyId=XXXXXX -Daws.secretKey=XXXXXX -Daws.arnRole=arn:aws:iam::123456789012:role/RoleName
+    -Daws.accessKeyId=XXXXXX -Daws.secretKey=XXXXXX -Daws.roleArn=arn:aws:iam::123456789012:role/RoleName
 
 
 Example:
@@ -159,7 +159,7 @@ Example:
 SBT_OPTS="-Daws.accessKeyId=XXXXXX -Daws.secretKey=XXXXXX" sbt
 
 // IAM Role Credentials
-SBT_OPTS="-Daws.accessKeyId=XXXXXX -Daws.secretKey=XXXXXX -Daws.arnRole=arn:aws:iam::123456789012:role/RoleName" sbt
+SBT_OPTS="-Daws.accessKeyId=XXXXXX -Daws.secretKey=XXXXXX -Daws.roleArn=arn:aws:iam::123456789012:role/RoleName" sbt
 ```
 
 #### Property File
